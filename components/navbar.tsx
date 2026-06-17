@@ -184,7 +184,7 @@ export default function Navbar() {
               <a
                 href="#contact"
                 onClick={(e) => handleSmoothScroll(e, "#contact")}
-                className="inline-flex items-center gap-2 rounded-xl bg-yellow-400 px-4 lg:px-5 py-2 lg:py-3 text-xs lg:text-sm font-semibold text-blue-950 shadow-lg transition-all duration-300 hover:bg-yellow-300 hover:shadow-xl hover:-translate-y-0.5"
+                className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-4 lg:px-5 py-2 lg:py-3 text-xs lg:text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:bg-emerald-600 hover:shadow-xl hover:-translate-y-0.5"
               >
                 Get Connected
                 <ArrowRight className="h-3 w-3 lg:h-4 lg:w-4" />
@@ -297,11 +297,11 @@ export default function Navbar() {
               </p>
             </div>
 
-            {/* Mobile CTA */}
+            {/* Mobile CTA - Light Green */}
             <a
               href="#contact"
               onClick={(e) => handleSmoothScroll(e, "#contact")}
-              className="mt-4 sm:mt-6 inline-flex items-center justify-center gap-2 rounded-xl bg-yellow-400 px-5 py-3.5 sm:py-4 font-semibold text-blue-950 shadow-lg transition hover:bg-yellow-300 hover:shadow-xl text-sm sm:text-base"
+              className="mt-4 sm:mt-6 inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-5 py-3.5 sm:py-4 font-semibold text-white shadow-lg transition hover:bg-emerald-600 hover:shadow-xl text-sm sm:text-base"
             >
               Get Connected
               <ArrowRight className="h-4 w-4" />
