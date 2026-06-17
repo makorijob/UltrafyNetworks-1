@@ -2,16 +2,16 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Menu, X, ArrowRight } from "lucide-react";
+import { Menu, X, ArrowRight, Wifi, Zap, Crown } from "lucide-react";
 
 const navLinks = [
   {
-    label: "Services",
-    href: "/services",
+    label: "Packages",
+    href: "#packages",
   },
   {
     label: "Coverage",
-    href: "/coverage",
+    href: "#coverage",
   },
   {
     label: "Careers",
@@ -19,13 +19,45 @@ const navLinks = [
   },
   {
     label: "Contact",
-    href: "/contact",
+    href: "#contact",
+  },
+];
+
+// Package data from your flyer
+export const packages = [
+  { 
+    speed: "8", 
+    price: "999", 
+    originalPrice: "1,500",
+    accent: "from-green-500 to-emerald-400",
+    icon: Wifi,
+    popular: false,
+    tag: "Starter"
+  },
+  { 
+    speed: "15", 
+    price: "1,500", 
+    originalPrice: "2,000",
+    accent: "from-blue-500 to-cyan-400",
+    icon: Wifi,
+    popular: true,
+    tag: "Most Popular"
+  },
+  { 
+    speed: "50", 
+    price: "4,000", 
+    originalPrice: "5,000",
+    accent: "from-purple-500 to-violet-400",
+    icon: Crown,
+    popular: false,
+    tag: "Premium"
   },
 ];
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [showPackages, setShowPackages] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -33,7 +65,6 @@ export default function Navbar() {
     };
 
     handleScroll();
-
     window.addEventListener("scroll", handleScroll);
 
     return () => {
@@ -58,19 +89,19 @@ export default function Navbar() {
       <header
         className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
           isScrolled
-            ? "bg-white/90 backdrop-blur-xl shadow-lg border-b border-gray-200"
-            : "bg-transparent"
+            ? "bg-white/95 backdrop-blur-xl shadow-lg border-b border-gray-200"
+            : "bg-gradient-to-b from-blue-950/90 to-transparent"
         }`}
       >
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="flex h-20 items-center justify-between">
-            {/* Logo */}
+            {/* Logo - Updated to UltrafyFiberNet */}
             <Link
               href="/"
               className="flex items-center gap-3 group"
             >
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 text-white font-bold shadow-lg transition-transform duration-300 group-hover:scale-105">
-                UF
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 text-white font-bold shadow-lg transition-transform duration-300 group-hover:scale-105 text-[10px] leading-tight text-center">
+                UFN
               </div>
 
               <div className="hidden sm:block">
@@ -81,7 +112,7 @@ export default function Navbar() {
                       : "text-white"
                   }`}
                 >
-                  UltrafyFiber
+                  UltrafyFiberNet
                 </h1>
 
                 <p
@@ -114,13 +145,22 @@ export default function Navbar() {
             </nav>
 
             {/* Desktop CTA */}
-            <div className="hidden md:flex items-center">
+            <div className="hidden md:flex items-center gap-4">
               <Link
-                href="/contact"
-                className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:bg-blue-700 hover:shadow-xl hover:-translate-y-0.5"
+                href="tel:0700541561"
+                className={`inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-sm font-semibold transition-all duration-300 ${
+                  isScrolled
+                    ? "text-blue-600 hover:bg-blue-50"
+                    : "text-white hover:bg-white/10"
+                }`}
+              >
+                📞 0700 541 561
+              </Link>
+              <Link
+                href="#contact"
+                className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-700 px-5 py-3 text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5"
               >
                 Get Connected
-
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
@@ -164,20 +204,20 @@ export default function Navbar() {
               : "translate-x-full"
           }`}
         >
-          {/* Drawer Header */}
+          {/* Drawer Header - Updated */}
           <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5">
             <Link
               href="/"
               onClick={() => setMobileOpen(false)}
               className="flex items-center gap-3"
             >
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 text-white font-bold">
-                UF
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 text-white font-bold text-[10px] leading-tight text-center">
+                UFN
               </div>
 
               <div>
                 <h2 className="font-bold text-gray-900">
-                  UltrafyFiber
+                  UltrafyFiberNet
                 </h2>
 
                 <p className="text-xs text-gray-500">
@@ -209,16 +249,43 @@ export default function Navbar() {
               </Link>
             ))}
 
+            {/* Packages Display in Mobile */}
+            <div className="mt-4 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 p-4">
+              <h3 className="text-sm font-semibold text-blue-900 mb-3">🔥 Hot Packages</h3>
+              {packages.map((pkg, i) => (
+                <div key={i} className="flex items-center justify-between py-2 border-b border-blue-200/50 last:border-0">
+                  <div className="flex items-center gap-2">
+                    <pkg.icon className="h-4 w-4 text-blue-600" />
+                    <span className="font-medium text-gray-900">{pkg.speed} Mbps</span>
+                  </div>
+                  <div>
+                    <span className="font-bold text-blue-600">KSh {pkg.price}</span>
+                    <span className="text-xs text-gray-500 line-through ml-2">KSh {pkg.originalPrice}</span>
+                  </div>
+                </div>
+              ))}
+              <p className="text-xs text-blue-700 mt-2">* Limited time offer</p>
+            </div>
+
             {/* Mobile CTA */}
             <Link
-              href="/contact"
+              href="#contact"
               onClick={() => setMobileOpen(false)}
-              className="mt-6 inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-4 font-semibold text-white shadow-lg transition hover:bg-blue-700"
+              className="mt-6 inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-700 px-5 py-4 font-semibold text-white shadow-lg transition hover:shadow-xl"
             >
               Get Connected
-
               <ArrowRight className="h-4 w-4" />
             </Link>
+
+            <div className="mt-4 flex items-center justify-center gap-4 text-sm">
+              <a href="tel:0700541561" className="text-blue-600 font-medium">
+                📞 0700 541 561
+              </a>
+              <span className="text-gray-300">|</span>
+              <a href="tel:0703199691" className="text-blue-600 font-medium">
+                0703 199 691
+              </a>
+            </div>
           </div>
 
           {/* Footer */}
@@ -226,11 +293,9 @@ export default function Navbar() {
             <p className="text-sm text-gray-500">
               Monday – Saturday
             </p>
-
             <p className="font-medium text-gray-900">
               8:00 AM – 5:00 PM
             </p>
-
             <p className="mt-2 text-sm text-blue-600 font-medium">
               24/7 Technical Support Available
             </p>
@@ -239,4 +304,4 @@ export default function Navbar() {
       </div>
     </>
   );
-}
+      }
