@@ -6,6 +6,10 @@ import { Menu, X, ArrowRight, Wifi, Phone } from "lucide-react";
 
 const navLinks = [
   {
+    label: "Services",
+    href: "/services",
+  },
+  {
     label: "Packages",
     href: "#packages",
   },
@@ -159,7 +163,7 @@ export default function Navbar() {
                   onClick={(e) => handleSmoothScroll(e, link.href)}
                   className={`font-medium transition-colors duration-300 ${
                     isScrolled
-                      ? "text-gray-700 hover:text-blue-600"
+                      ? "text-gray-700 hover:text-emerald-600"
                       : "text-white hover:text-yellow-300"
                   }`}
                 >
@@ -174,7 +178,7 @@ export default function Navbar() {
                 href="tel:0700541561"
                 className={`inline-flex items-center gap-2 rounded-xl px-3 lg:px-5 py-2 lg:py-3 text-xs lg:text-sm font-semibold transition-all duration-300 ${
                   isScrolled
-                    ? "text-blue-600 hover:bg-blue-50"
+                    ? "text-emerald-600 hover:bg-emerald-50"
                     : "text-white hover:bg-white/10"
                 }`}
               >
@@ -269,7 +273,7 @@ export default function Navbar() {
                 key={link.href}
                 href={link.href}
                 onClick={(e) => handleSmoothScroll(e, link.href)}
-                className="rounded-xl px-4 py-3.5 sm:py-4 text-base sm:text-lg font-medium text-gray-700 transition hover:bg-gray-100 hover:text-blue-600"
+                className="rounded-xl px-4 py-3.5 sm:py-4 text-base sm:text-lg font-medium text-gray-700 transition hover:bg-gray-100 hover:text-emerald-600"
               >
                 {link.label}
               </a>
@@ -297,7 +301,7 @@ export default function Navbar() {
               </p>
             </div>
 
-            {/* Mobile CTA - Light Green */}
+            {/* Mobile CTA */}
             <a
               href="#contact"
               onClick={(e) => handleSmoothScroll(e, "#contact")}
@@ -308,11 +312,11 @@ export default function Navbar() {
             </a>
 
             <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-xs sm:text-sm">
-              <a href="tel:0700541561" className="text-blue-600 font-medium">
+              <a href="tel:0700541561" className="text-emerald-600 font-medium">
                 Call 0700 541 561
               </a>
               <span className="text-gray-300 hidden sm:inline">|</span>
-              <a href="tel:0703199691" className="text-blue-600 font-medium">
+              <a href="tel:0703199691" className="text-emerald-600 font-medium">
                 WhatsApp 0703 199 691
               </a>
             </div>
@@ -326,7 +330,7 @@ export default function Navbar() {
             <p className="font-medium text-gray-900 text-sm sm:text-base">
               8:00 AM – 5:00 PM
             </p>
-            <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-blue-600 font-medium">
+            <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-emerald-600 font-medium">
               24/7 Technical Support Available
             </p>
           </div>
