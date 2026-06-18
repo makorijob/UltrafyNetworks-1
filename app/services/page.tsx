@@ -169,7 +169,7 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      {/* ============ OTHER SERVICES ============ */}
+      {/* ============ OTHER SERVICES WITH IMAGES ============ */}
       <section className="py-12 sm:py-20 px-4 sm:px-6 bg-slate-50">
         <div className="max-w-6xl mx-auto">
           <p className="text-emerald-600 font-semibold tracking-widest text-xs sm:text-sm">INSTALLATIONS &amp; SECURITY</p>
@@ -185,19 +185,28 @@ export default function ServicesPage() {
               >
                 {/* Image */}
                 <div className="relative h-48 sm:h-56 bg-slate-200 overflow-hidden">
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-slate-200">
-                    <service.icon className="w-16 h-16 text-blue-400/60" />
-                  </div>
+                  <Image
+                    src={service.image}
+                    alt={service.title}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                   <div className="absolute top-4 right-4 z-10">
                     <div className={`w-10 h-10 rounded-full ${service.color} flex items-center justify-center shadow-lg`}>
                       <service.icon className="w-5 h-5 text-white" />
                     </div>
                   </div>
+                  <div className="absolute bottom-4 left-4 z-10">
+                    <span className="bg-black/50 backdrop-blur-sm text-white text-xs font-medium px-3 py-1.5 rounded-full">
+                      {service.title}
+                    </span>
+                  </div>
                 </div>
 
                 {/* Content */}
                 <div className="p-5 sm:p-6">
-                  <h3 className="text-lg sm:text-xl font-bold text-blue-950 mb-2">{service.title}</h3>
                   <p className="text-slate-600 text-sm leading-relaxed mb-4">{service.desc}</p>
                   
                   {/* Features */}
