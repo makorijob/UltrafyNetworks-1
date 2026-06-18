@@ -27,7 +27,7 @@ const otherServices = [
     title: "Solar panel installation",
     desc: "Design and installation of solar systems sized to your home or business power needs, with battery backup options.",
     color: "bg-amber-500",
-    image: "/images/services/solar.jpg",
+    image: "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=800&h=600&fit=crop",
     features: ["Solar panel installation", "Battery backup systems", "System design", "Grid-tied solutions", "Off-grid systems"]
   },
   {
@@ -35,7 +35,7 @@ const otherServices = [
     title: "Electrical installation",
     desc: "Full house and commercial wiring, fault diagnosis, and certified electrical work done to code.",
     color: "bg-yellow-500",
-    image: "/images/services/electrical.jpg",
+    image: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&h=600&fit=crop",
     features: ["House wiring", "Commercial wiring", "Fault diagnosis", "Certified work", "Safety compliance"]
   },
   {
@@ -43,7 +43,7 @@ const otherServices = [
     title: "CCTV installation",
     desc: "Indoor and outdoor camera systems with remote viewing on your phone, sized for homes, shops, or compounds.",
     color: "bg-slate-700",
-    image: "/images/services/cctv.jpg",
+    image: "https://images.unsplash.com/photo-1558002038-1055907df827?w=800&h=600&fit=crop",
     features: ["HD cameras", "Remote viewing", "Night vision", "Indoor/outdoor", "24/7 monitoring"]
   },
   {
@@ -51,7 +51,7 @@ const otherServices = [
     title: "Electric fence installation",
     desc: "Perimeter security fencing with shock deterrent and alarm integration for homes and commercial premises.",
     color: "bg-red-600",
-    image: "/images/services/electric-fence.jpg",
+    image: "https://images.unsplash.com/photo-1582139329536-e7284fece509?w=800&h=600&fit=crop",
     features: ["Perimeter security", "Shock deterrent", "Alarm integration", "Commercial premises", "Home security"]
   },
   {
@@ -59,7 +59,7 @@ const otherServices = [
     title: "Fire alarm systems",
     desc: "Smoke and heat detection systems with audible alerts, installed and tested to meet safety requirements.",
     color: "bg-orange-600",
-    image: "/images/services/fire-alarm.jpg",
+    image: "https://images.unsplash.com/photo-1562311701-58c0a0f0b218?w=800&h=600&fit=crop",
     features: ["Smoke detection", "Heat detection", "Audible alerts", "Safety compliance", "System testing"]
   },
   {
@@ -67,7 +67,7 @@ const otherServices = [
     title: "Burglar alarm systems",
     desc: "Motion-sensor and entry alarms with optional monitoring, giving you alerts the moment something's wrong.",
     color: "bg-blue-700",
-    image: "/images/services/burglar-alarm.jpg",
+    image: "https://images.unsplash.com/photo-1558002038-1055907df827?w=800&h=600&fit=crop",
     features: ["Motion sensors", "Entry alarms", "Remote monitoring", "Instant alerts", "24/7 protection"]
   },
   {
@@ -75,7 +75,7 @@ const otherServices = [
     title: "Access Points Installation",
     desc: "Extend your network coverage with professional access point installation. Perfect for offices, hotels, and large homes.",
     color: "bg-cyan-600",
-    image: "/images/services/access-points.jpg",
+    image: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=800&h=600&fit=crop",
     features: ["WiFi coverage extension", "Mesh network setup", "Guest WiFi", "Signal optimization", "Office network"]
   },
   {
@@ -83,7 +83,7 @@ const otherServices = [
     title: "Technical Installations",
     desc: "Professional technical installation services for all your IT and security needs. Expert technicians with years of experience.",
     color: "bg-indigo-600",
-    image: "/images/services/technical.jpg",
+    image: "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=800&h=600&fit=crop",
     features: ["IT infrastructure", "Network cabling", "Hardware installation", "System configuration", "Technical support"]
   },
 ];
@@ -192,7 +192,7 @@ export default function ServicesPage() {
                     className="object-cover"
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                   <div className="absolute top-4 right-4 z-10">
                     <div className={`w-10 h-10 rounded-full ${service.color} flex items-center justify-center shadow-lg`}>
                       <service.icon className="w-5 h-5 text-white" />
@@ -295,4 +295,4 @@ export default function ServicesPage() {
       </section>
     </div>
   );
-    }
+}
