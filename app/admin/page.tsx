@@ -34,6 +34,7 @@ import {
   Zap,
   Truck,
   ArrowUpCircle,
+  Check,
 } from 'lucide-react';
 
 // ============ TYPES ============
