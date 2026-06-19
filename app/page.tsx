@@ -34,12 +34,12 @@ const iconMap: { [key: string]: any } = {
   Sun: Sun,
   Zap: Zap,
   Video: Camera,
+  Camera: Camera,
   ShieldAlert: ShieldAlert,
   Flame: ShieldAlert,
   Lock: ShieldAlert,
   Truck: ShieldAlert,
   ArrowUpCircle: ShieldAlert,
-  Camera: Camera,
   Shield: ShieldAlert,
 };
 
@@ -47,10 +47,6 @@ export default function Home() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   const fetchData = async () => {
     try {
@@ -64,7 +60,7 @@ export default function Home() {
       }
 
       // Fetch services for preview
-      const servicesRes = await fetch('/api/services?limit=4');
+      const servicesRes = await fetch('/api/services');
       const servicesData = await servicesRes.json();
       if (servicesData.success) {
         setServices(servicesData.data);
@@ -75,6 +71,10 @@ export default function Home() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const getIcon = (iconName: string) => {
     return iconMap[iconName] || Wifi;
@@ -167,7 +167,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ============ SERVICES PREVIEW ============ */}
+      {/* ============ DYNAMIC SERVICES PREVIEW ============ */}
       <section className="py-16 sm:py-24 px-4 sm:px-6 bg-slate-50">
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16">
@@ -234,7 +234,6 @@ export default function Home() {
 
       {/* ============ PACKAGES SECTION ============ */}
       <section id="packages" className="py-16 sm:py-24 px-4 sm:px-6 bg-white">
-        {/* Keep existing packages section */}
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16">
             <p className="text-blue-600 font-semibold tracking-widest text-xs sm:text-sm">OUR PACKAGES</p>
