@@ -10,7 +10,7 @@ function initializeDatabase() {
   if (!fs.existsSync(dbPath)) {
     db = new Database(dbPath);
     
-    // Create table
+    // Create table with status column
     db.exec(`
       CREATE TABLE IF NOT EXISTS testimonials (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -18,23 +18,21 @@ function initializeDatabase() {
         area TEXT NOT NULL,
         quote TEXT NOT NULL,
         rating INTEGER DEFAULT 5,
-        status TEXT DEFAULT 'active',
+        status TEXT DEFAULT 'pending',
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
       )
     `);
     
-    // Insert sample data
+    // Insert sample approved data
     const insertStmt = db.prepare(`
-      INSERT INTO testimonials (name, area, quote, rating) 
-      VALUES (?, ?, ?, ?)
+      INSERT INTO testimonials (name, area, quote, rating, status) 
+      VALUES (?, ?, ?, ?, 'approved')
     `);
     
     const sampleTestimonials = [
       ['Grace Wanjiru', 'Weitethie', 'Switched from mobile data and never looked back. My kids\' online classes run without a single freeze now.', 5],
       ['Peter Mwangi', 'Ngoingwa', 'Installation took less than two hours and support actually picks up the phone when I call.', 5],
       ['Sarah Akinyi', 'Section 9', 'The 30 Mbps plan handles three of us streaming at once with no lag. Best decision for our home this year.', 5],
-      ['John Kamau', 'Thika Town', 'UltrafyFiberNet has transformed how we work from home. The connection is stable and fast.', 5],
-      ['Mary Wanjiku', 'Gatukuyu', 'I love the 1 month free offer! The installation was smooth and the team was professional.', 4],
     ];
     
     const insertMany = db.transaction((testimonials: any[][]) => {
@@ -48,7 +46,7 @@ function initializeDatabase() {
   }
 }
 
-// GET: Fetch all active testimonials
+// GET: Fetch all approved testimonials
 export async function GET(request: NextRequest) {
   try {
     // Ensure database exists
@@ -56,14 +54,15 @@ export async function GET(request: NextRequest) {
     
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit') || '10');
-    const status = searchParams.get('status') || 'active';
     
     const dbPath = '/tmp/testimonials.db';
     const db = new Database(dbPath);
+    
+    // Only fetch approved testimonials for public display
     const stmt = db.prepare(
-      'SELECT * FROM testimonials WHERE status = ? ORDER BY created_at DESC LIMIT ?'
+      'SELECT * FROM testimonials WHERE status = "approved" ORDER BY created_at DESC LIMIT ?'
     );
-    const result = stmt.all(status, limit);
+    const result = stmt.all(limit);
     db.close();
     
     return NextResponse.json({
@@ -76,9 +75,9 @@ export async function GET(request: NextRequest) {
     console.error('Database error:', error);
     // Return mock data as fallback
     const mockTestimonials = [
-      { id: 1, name: "Grace Wanjiru", area: "Weitethie", quote: "Switched from mobile data and never looked back. My kids' online classes run without a single freeze now.", rating: 5 },
-      { id: 2, name: "Peter Mwangi", area: "Ngoingwa", quote: "Installation took less than two hours and support actually picks up the phone when I call.", rating: 5 },
-      { id: 3, name: "Sarah Akinyi", area: "Section 9", quote: "The 30 Mbps plan handles three of us streaming at once with no lag. Best decision for our home this year.", rating: 5 },
+      { id: 1, name: "Grace Wanjiru", area: "Weitethie", quote: "Switched from mobile data and never looked back. My kids' online classes run without a single freeze now.", rating: 5, status: "approved" },
+      { id: 2, name: "Peter Mwangi", area: "Ngoingwa", quote: "Installation took less than two hours and support actually picks up the phone when I call.", rating: 5, status: "approved" },
+      { id: 3, name: "Sarah Akinyi", area: "Section 9", quote: "The 30 Mbps plan handles three of us streaming at once with no lag. Best decision for our home this year.", rating: 5, status: "approved" },
     ];
     
     return NextResponse.json({
@@ -90,7 +89,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST: Create a new testimonial
+// POST: Create a new testimonial (pending approval)
 export async function POST(request: NextRequest) {
   try {
     // Ensure database exists
@@ -101,19 +100,23 @@ export async function POST(request: NextRequest) {
     
     if (!name || !area || !quote) {
       return NextResponse.json(
-        { success: false, error: 'Missing required fields: name, area, quote' },
+        { success: false, error: 'Please fill in all required fields: name, area, quote' },
         { status: 400 }
       );
     }
     
+    // Validate rating
+    const validRating = rating && rating >= 1 && rating <= 5 ? rating : 5;
+    
     const dbPath = '/tmp/testimonials.db';
     const db = new Database(dbPath);
+    
     const stmt = db.prepare(`
-      INSERT INTO testimonials (name, area, quote, rating)
-      VALUES (?, ?, ?, ?)
+      INSERT INTO testimonials (name, area, quote, rating, status)
+      VALUES (?, ?, ?, ?, 'pending')
     `);
     
-    const info = stmt.run(name, area, quote, rating || 5);
+    const info = stmt.run(name, area, quote, validRating);
     
     const getStmt = db.prepare('SELECT * FROM testimonials WHERE id = ?');
     const newTestimonial = getStmt.get(info.lastInsertRowid);
@@ -122,19 +125,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: newTestimonial,
-      message: 'Testimonial added successfully',
+      message: 'Thank you! Your review has been submitted and is awaiting approval.',
     }, { status: 201 });
     
   } catch (error) {
     console.error('Database error:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to create testimonial' },
+      { success: false, error: 'Failed to submit review. Please try again.' },
       { status: 500 }
     );
   }
 }
 
-// DELETE: Remove a testimonial
+// DELETE: Remove a testimonial (admin only)
 export async function DELETE(request: NextRequest) {
   try {
     // Ensure database exists
@@ -175,4 +178,4 @@ export async function DELETE(request: NextRequest) {
       { status: 500 }
     );
   }
-       }
+}
