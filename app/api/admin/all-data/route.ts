@@ -1,9 +1,43 @@
-
 import { NextRequest, NextResponse } from 'next/server';
 import Database from 'better-sqlite3';
 import fs from 'fs';
 
-function getDb(dbPath: string) {
+interface Service {
+  id: number;
+  title: string;
+  description: string;
+  icon: string;
+  color: string;
+  image: string;
+  category: string;
+  features: string;
+  status: string;
+  created_at: string;
+}
+
+interface Career {
+  id: number;
+  title: string;
+  department: string;
+  location: string;
+  type: string;
+  icon: string;
+  desc: string;
+  status: string;
+  posted_date: string;
+}
+
+interface Review {
+  id: number;
+  name: string;
+  area: string;
+  quote: string;
+  rating: number;
+  status: string;
+  created_at: string;
+}
+
+function getDb(dbPath: string): Database.Database | null {
   if (!fs.existsSync(dbPath)) {
     return null;
   }
@@ -17,22 +51,22 @@ export async function GET() {
     const careersDb = getDb('/tmp/careers.db');
     const testimonialsDb = getDb('/tmp/testimonials.db');
 
-    let services = [];
-    let careers = [];
-    let reviews = [];
+    let services: Service[] = [];
+    let careers: Career[] = [];
+    let reviews: Review[] = [];
 
     if (servicesDb) {
-      services = servicesDb.prepare('SELECT * FROM services ORDER BY created_at DESC').all();
+      services = servicesDb.prepare('SELECT * FROM services ORDER BY created_at DESC').all() as Service[];
       servicesDb.close();
     }
 
     if (careersDb) {
-      careers = careersDb.prepare('SELECT * FROM roles ORDER BY posted_date DESC').all();
+      careers = careersDb.prepare('SELECT * FROM roles ORDER BY posted_date DESC').all() as Career[];
       careersDb.close();
     }
 
     if (testimonialsDb) {
-      reviews = testimonialsDb.prepare('SELECT * FROM testimonials ORDER BY created_at DESC').all();
+      reviews = testimonialsDb.prepare('SELECT * FROM testimonials ORDER BY created_at DESC').all() as Review[];
       testimonialsDb.close();
     }
 
