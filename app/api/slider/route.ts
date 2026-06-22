@@ -10,6 +10,7 @@ const UPLOAD_DIR = path.join(process.cwd(), 'public/uploads/slider');
 // Ensure upload directory exists
 if (!fs.existsSync(UPLOAD_DIR)) {
   fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+  console.log('✅ Created upload directory:', UPLOAD_DIR);
 }
 
 interface Slide {
@@ -60,7 +61,7 @@ function initializeDatabase() {
         [
           'UltrafyNetworks',
           'Tuko Thika',
-          'Premium fibre internet built for Thika homes and businesses. No buffering, no excuses — just fast, dependable connection your whole family can count on.',
+          'Premium fibre internet built for Thika homes and businesses.',
           '/uploads/slider/slide1.jpg',
           'Get Connected Now',
           '#contact',
@@ -71,7 +72,7 @@ function initializeDatabase() {
         [
           'Fibre to the Home',
           'Lightning Fast Speeds',
-          'Experience the power of true fibre internet with speeds up to 30 Mbps. Stream, game, and work without interruption.',
+          'Experience the power of true fibre internet with speeds up to 30 Mbps.',
           '/uploads/slider/slide2.jpg',
           'View Packages',
           '#packages',
@@ -82,7 +83,7 @@ function initializeDatabase() {
         [
           '1 Month Free',
           'Special Offer',
-          'Sign up today and get your first month absolutely free! Limited time offer available for all packages.',
+          'Sign up today and get your first month absolutely free!',
           '/uploads/slider/slide3.jpg',
           'Claim Offer',
           '#contact',
@@ -93,7 +94,7 @@ function initializeDatabase() {
         [
           'UltrafyNetworks',
           'Connecting Thika',
-          'Join hundreds of satisfied customers across Thika who trust us for their internet, security, and solar needs.',
+          'Join hundreds of satisfied customers across Thika.',
           '/uploads/slider/slide4.jpg',
           'Learn More',
           '/services',
@@ -122,17 +123,23 @@ function initializeDatabase() {
 
 // Helper function to save uploaded file
 async function saveFile(file: File): Promise<string> {
-  const bytes = await file.arrayBuffer();
-  const buffer = Buffer.from(bytes);
-  
-  // Generate unique filename
-  const timestamp = Date.now();
-  const ext = path.extname(file.name);
-  const filename = `${timestamp}${ext}`;
-  const filepath = path.join(UPLOAD_DIR, filename);
-  
-  await writeFile(filepath, buffer);
-  return `/uploads/slider/${filename}`;
+  try {
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+    
+    // Generate unique filename
+    const timestamp = Date.now();
+    const ext = path.extname(file.name);
+    const filename = `${timestamp}${ext}`;
+    const filepath = path.join(UPLOAD_DIR, filename);
+    
+    await writeFile(filepath, buffer);
+    console.log('✅ File saved:', filepath);
+    return `/uploads/slider/${filename}`;
+  } catch (error) {
+    console.error('❌ Error saving file:', error);
+    throw error;
+  }
 }
 
 // GET: Fetch all slides
@@ -175,10 +182,15 @@ export async function GET(request: NextRequest) {
 // POST: Create a new slide with image upload
 export async function POST(request: NextRequest) {
   try {
+    console.log('📝 POST request received for slide creation');
     initializeDatabase();
     
+    // Check content type
     const contentType = request.headers.get('content-type') || '';
+    console.log('Content-Type:', contentType);
+    
     if (!contentType.includes('multipart/form-data')) {
+      console.error('❌ Invalid content type:', contentType);
       return NextResponse.json(
         { success: false, error: 'Content-Type must be multipart/form-data' },
         { status: 400 }
@@ -186,6 +198,18 @@ export async function POST(request: NextRequest) {
     }
     
     const formData = await request.formData();
+    console.log('📋 FormData received');
+    
+    // Log all form data entries for debugging
+    for (const [key, value] of formData.entries()) {
+      if (key === 'image') {
+        const file = value as File;
+        console.log(`📎 Image: ${file.name}, Size: ${file.size} bytes, Type: ${file.type}`);
+      } else {
+        console.log(`📝 ${key}: ${value}`);
+      }
+    }
+    
     const title = formData.get('title') as string;
     const subtitle = formData.get('subtitle') as string;
     const description = formData.get('description') as string;
@@ -198,6 +222,7 @@ export async function POST(request: NextRequest) {
     
     // Validate required fields
     if (!title || !subtitle || !description) {
+      console.error('❌ Missing required fields:', { title, subtitle, description });
       return NextResponse.json(
         { success: false, error: 'Missing required fields: title, subtitle, description' },
         { status: 400 }
@@ -206,6 +231,7 @@ export async function POST(request: NextRequest) {
     
     // Validate image
     if (!imageFile || imageFile.size === 0) {
+      console.error('❌ No image file provided');
       return NextResponse.json(
         { success: false, error: 'Please select an image to upload' },
         { status: 400 }
@@ -215,6 +241,7 @@ export async function POST(request: NextRequest) {
     // Validate image type
     const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
     if (!validTypes.includes(imageFile.type)) {
+      console.error('❌ Invalid image type:', imageFile.type);
       return NextResponse.json(
         { success: false, error: 'Invalid image format. Please use JPEG, PNG, or WebP' },
         { status: 400 }
@@ -223,6 +250,7 @@ export async function POST(request: NextRequest) {
     
     // Validate image size (5MB max)
     if (imageFile.size > 5 * 1024 * 1024) {
+      console.error('❌ Image too large:', imageFile.size);
       return NextResponse.json(
         { success: false, error: 'Image size too large. Maximum 5MB allowed' },
         { status: 400 }
@@ -231,6 +259,7 @@ export async function POST(request: NextRequest) {
     
     // Save image
     let imagePath = await saveFile(imageFile);
+    console.log('✅ Image saved:', imagePath);
     
     const db = new Database(DB_PATH);
     const stmt = db.prepare(`
@@ -254,6 +283,8 @@ export async function POST(request: NextRequest) {
     const getStmt = db.prepare('SELECT * FROM slides WHERE id = ?');
     const newSlide = getStmt.get(info.lastInsertRowid);
     db.close();
+    
+    console.log('✅ Slide created successfully with ID:', info.lastInsertRowid);
     
     return NextResponse.json({
       success: true,
