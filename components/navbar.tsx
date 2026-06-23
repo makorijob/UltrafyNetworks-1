@@ -248,7 +248,7 @@ export default function Navbar() {
         </div>
       </header>
 
-      {/* Mobile Drawer - Half Screen */}
+      {/* Mobile Sidebar */}
       <div
         className={`fixed inset-0 z-[60] transition-all duration-300 md:hidden ${
           mobileOpen
@@ -262,27 +262,27 @@ export default function Navbar() {
           onClick={() => setMobileOpen(false)}
         />
 
-        {/* Drawer - Half width on mobile */}
+        {/* Sidebar - Left side */}
         <aside
-          className={`absolute right-0 top-0 h-full w-1/2 bg-white shadow-2xl transition-transform duration-300 ease-in-out ${
+          className={`absolute left-0 top-0 h-full w-64 bg-white shadow-2xl transition-transform duration-300 ease-in-out ${
             mobileOpen
               ? "translate-x-0"
-              : "translate-x-full"
+              : "-translate-x-full"
           }`}
         >
-          {/* Drawer Header - With Clickable Logo */}
-          <div className="flex items-center justify-between border-b border-gray-100 px-3 py-3">
+          {/* Sidebar Header - With Clickable Logo */}
+          <div className="flex items-center justify-between border-b border-gray-100 px-4 py-4">
             <Link
               href="/"
               onClick={handleLogoClick}
-              className="flex items-center gap-1 cursor-pointer hover:opacity-80 transition-opacity"
+              className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
             >
               <div>
-                <h2 className="font-bold text-xs text-gray-900">
+                <h2 className="font-bold text-sm text-gray-900">
                   UltrafyNetworks
                 </h2>
-                <p className="text-[8px] text-gray-500">
-                  Fast • Reliable
+                <p className="text-[10px] text-gray-500">
+                  Fast • Reliable • Unlimited
                 </p>
               </div>
             </Link>
@@ -290,62 +290,63 @@ export default function Navbar() {
             <button
               type="button"
               onClick={() => setMobileOpen(false)}
-              className="rounded-xl p-1 text-gray-600 hover:bg-gray-100 transition-colors"
+              className="rounded-xl p-1.5 text-gray-600 hover:bg-gray-100 transition-colors z-10"
               aria-label="Close Menu"
             >
-              <X className="h-4 w-4" />
+              <X className="h-5 w-5" />
             </button>
           </div>
 
-          {/* Drawer Navigation - Scrollable */}
-          <div className="flex flex-col px-3 py-3 overflow-y-auto" style={{ maxHeight: "calc(100% - 80px)" }}>
+          {/* Sidebar Navigation - Scrollable */}
+          <div className="flex flex-col px-4 py-4 overflow-y-auto" style={{ maxHeight: "calc(100% - 120px)" }}>
             {navLinks.map((link) => (
               <a
                 key={link.href}
                 href={link.href}
                 onClick={(e) => handleNavigation(e, link.href)}
-                className="rounded-lg px-3 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-100 hover:text-emerald-600 active:bg-gray-200"
+                className="rounded-xl px-4 py-3 text-base font-medium text-gray-700 transition hover:bg-gray-100 hover:text-emerald-600 active:bg-gray-200"
               >
                 {link.label}
               </a>
             ))}
 
-            {/* Packages Display in Mobile */}
-            <div className="mt-3 rounded-lg bg-gradient-to-br from-emerald-50 to-emerald-100 p-2">
-              <h3 className="text-[10px] font-semibold text-emerald-900 mb-1.5">
+            {/* Packages Display in Sidebar */}
+            <div className="mt-4 rounded-xl bg-gradient-to-br from-emerald-50 to-emerald-100 p-3">
+              <h3 className="text-xs font-semibold text-emerald-900 mb-2">
                 Our Packages
               </h3>
               {packages.map((pkg, i) => (
-                <div key={i} className="flex items-center justify-between py-1 border-b border-emerald-200/50 last:border-0">
-                  <div className="flex items-center gap-1.5">
-                    <Wifi className="h-2.5 w-2.5 text-emerald-600" />
-                    <span className="font-medium text-xs text-gray-900">{pkg.speed} Mbps</span>
+                <div key={i} className="flex items-center justify-between py-1.5 border-b border-emerald-200/50 last:border-0">
+                  <div className="flex items-center gap-2">
+                    <Wifi className="h-3 w-3 text-emerald-600" />
+                    <span className="font-medium text-sm text-gray-900">{pkg.speed} Mbps</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <span className="font-bold text-emerald-600 text-xs">KSh {pkg.price}</span>
-                    <span className="text-[8px] text-gray-500 line-through">KSh {pkg.originalPrice}</span>
+                    <span className="font-bold text-emerald-600 text-sm">KSh {pkg.price}</span>
+                    <span className="text-[10px] text-gray-500 line-through">KSh {pkg.originalPrice}</span>
                   </div>
                 </div>
               ))}
-              <p className="text-[8px] text-emerald-700 mt-1">
-                * 1 Month Free
+              <p className="text-[10px] text-emerald-700 mt-1">
+                * 1 Month Free After Installation
               </p>
             </div>
 
-            {/* Mobile CTA */}
+            {/* Sidebar CTA */}
             <a
               href="/#contact"
               onClick={(e) => handleNavigation(e, "/#contact")}
-              className="mt-3 inline-flex items-center justify-center gap-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 px-3 py-2.5 font-semibold text-white shadow-lg transition text-xs w-full"
+              className="mt-4 inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 px-4 py-3.5 font-semibold text-white shadow-lg transition text-sm w-full"
             >
               Get Connected
-              <ArrowRight className="h-3 w-3" />
+              <ArrowRight className="h-4 w-4" />
             </a>
 
-            <div className="mt-2 flex flex-col items-center justify-center gap-1 text-[10px]">
+            <div className="mt-3 flex flex-col items-center justify-center gap-2 text-xs">
               <a href="tel:0700541561" className="text-emerald-600 font-medium hover:text-emerald-700">
                 Call 0700 541 561
               </a>
+              <span className="text-gray-300">|</span>
               <a href="tel:0703199691" className="text-emerald-600 font-medium hover:text-emerald-700">
                 WhatsApp 0703 199 691
               </a>
@@ -353,12 +354,12 @@ export default function Navbar() {
           </div>
 
           {/* Footer - Fixed at bottom */}
-          <div className="absolute bottom-0 left-0 right-0 border-t border-gray-100 px-3 py-2 bg-white">
-            <p className="text-[8px] text-gray-500 text-center">
-              Mon–Sat • 8AM–5PM
+          <div className="absolute bottom-0 left-0 right-0 border-t border-gray-100 px-4 py-4 bg-white">
+            <p className="text-xs text-gray-500 text-center">
+              Monday – Saturday • 8:00 AM – 5:00 PM
             </p>
-            <p className="text-[8px] text-emerald-600 font-medium text-center">
-              24/7 Support
+            <p className="mt-1 text-xs text-emerald-600 font-medium text-center">
+              24/7 Technical Support Available
             </p>
           </div>
         </aside>
