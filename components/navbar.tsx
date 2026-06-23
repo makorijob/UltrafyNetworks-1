@@ -150,15 +150,11 @@ export default function Navbar() {
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 sm:h-20 items-center justify-between">
-            {/* Logo - Full Name */}
+            {/* Logo - Full Name Only */}
             <Link
               href="/"
               className="flex items-center gap-2 sm:gap-3 group flex-shrink-0"
             >
-              <div className="flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-xl sm:rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 text-white font-bold shadow-lg transition-transform duration-300 group-hover:scale-105 text-[8px] sm:text-[10px] leading-tight text-center">
-                UFN
-              </div>
-
               <div className="hidden xs:block">
                 <h1
                   className={`font-bold text-sm sm:text-lg transition-colors duration-300 ${
@@ -269,10 +265,6 @@ export default function Navbar() {
               onClick={() => setMobileOpen(false)}
               className="flex items-center gap-2 sm:gap-3"
             >
-              <div className="flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-xl sm:rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 text-white font-bold text-[8px] sm:text-[10px] leading-tight text-center">
-                UFN
-              </div>
-
               <div>
                 <h2 className="font-bold text-sm sm:text-base text-gray-900">
                   UltrafyNetworks
