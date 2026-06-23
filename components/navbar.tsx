@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { Menu, X, ArrowRight, Wifi, Phone } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 
 const navLinks = [
@@ -41,6 +42,7 @@ export const packages = [
     price: "1,000", 
     originalPrice: "1,500",
     accent: "from-emerald-500 to-emerald-400",
+    icon: Wifi,
     popular: false,
     tag: "Starter"
   },
@@ -49,6 +51,7 @@ export const packages = [
     price: "1,500", 
     originalPrice: "2,000",
     accent: "from-blue-500 to-cyan-400",
+    icon: Wifi,
     popular: true,
     tag: "Most Popular"
   },
@@ -57,6 +60,7 @@ export const packages = [
     price: "2,000", 
     originalPrice: "2,500",
     accent: "from-purple-500 to-violet-400",
+    icon: Wifi,
     popular: false,
     tag: "Standard"
   },
@@ -65,6 +69,7 @@ export const packages = [
     price: "3,000", 
     originalPrice: "4,000",
     accent: "from-orange-500 to-amber-400",
+    icon: Wifi,
     popular: false,
     tag: "Premium"
   },
@@ -145,7 +150,7 @@ export default function Navbar() {
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 sm:h-20 items-center justify-between">
-            {/* Logo - Clickable UltrafyNetworks */}
+            {/* Logo - Full Name Only */}
             <Link
               href="/"
               className="flex items-center gap-2 sm:gap-3 group flex-shrink-0"
@@ -201,6 +206,7 @@ export default function Navbar() {
                     : "text-white/90 hover:text-white hover:bg-white/10"
                 }`}
               >
+                <Phone className="w-3 h-3 lg:w-4 lg:h-4" />
                 0700 541 561
               </a>
               <a
@@ -209,6 +215,7 @@ export default function Navbar() {
                 className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 px-4 lg:px-5 py-2 lg:py-3 text-xs lg:text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5"
               >
                 Get Connected
+                <ArrowRight className="h-3 w-3 lg:h-4 lg:w-4" />
               </a>
             </div>
 
@@ -223,7 +230,7 @@ export default function Navbar() {
               }`}
               aria-label="Open Menu"
             >
-              <span className="text-2xl">☰</span>
+              <Menu className="h-6 w-6 sm:h-7 sm:w-7" />
             </button>
           </div>
         </div>
@@ -275,7 +282,7 @@ export default function Navbar() {
               className="rounded-xl p-1.5 sm:p-2 text-gray-600 hover:bg-gray-100"
               aria-label="Close Menu"
             >
-              <span className="text-2xl">✕</span>
+              <X className="h-5 w-5 sm:h-6 sm:w-6" />
             </button>
           </div>
 
@@ -300,6 +307,7 @@ export default function Navbar() {
               {packages.map((pkg, i) => (
                 <div key={i} className="flex items-center justify-between py-1.5 sm:py-2 border-b border-emerald-200/50 last:border-0">
                   <div className="flex items-center gap-2">
+                    <Wifi className="h-3 w-3 sm:h-4 sm:w-4 text-emerald-600" />
                     <span className="font-medium text-sm sm:text-base text-gray-900">{pkg.speed} Mbps</span>
                   </div>
                   <div className="flex items-center gap-1 sm:gap-2">
@@ -320,6 +328,7 @@ export default function Navbar() {
               className="mt-4 sm:mt-6 inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 px-5 py-3.5 sm:py-4 font-semibold text-white shadow-lg transition hover:shadow-xl text-sm sm:text-base"
             >
               Get Connected
+              <ArrowRight className="h-4 w-4" />
             </a>
 
             <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-xs sm:text-sm">
