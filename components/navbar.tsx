@@ -248,7 +248,7 @@ export default function Navbar() {
         </div>
       </header>
 
-      {/* Mobile Sidebar */}
+      {/* Mobile Sidebar - Right Side */}
       <div
         className={`fixed inset-0 z-[60] transition-all duration-300 md:hidden ${
           mobileOpen
@@ -262,12 +262,12 @@ export default function Navbar() {
           onClick={() => setMobileOpen(false)}
         />
 
-        {/* Sidebar - Left side */}
+        {/* Sidebar - Right side */}
         <aside
-          className={`absolute left-0 top-0 h-full w-64 bg-white shadow-2xl transition-transform duration-300 ease-in-out ${
+          className={`absolute right-0 top-0 h-full w-64 bg-white shadow-2xl transition-transform duration-300 ease-in-out ${
             mobileOpen
               ? "translate-x-0"
-              : "-translate-x-full"
+              : "translate-x-full"
           }`}
         >
           {/* Sidebar Header - With Clickable Logo */}
