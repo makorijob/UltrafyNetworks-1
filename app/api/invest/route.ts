@@ -99,8 +99,6 @@ function initializeDatabase() {
       
       insertMany(sampleInvestments);
       console.log('✅ Invest database initialized with sample data!');
-    } else {
-      console.log('✅ Invest database already exists.');
     }
     
     db.close();
@@ -111,7 +109,6 @@ function initializeDatabase() {
   }
 }
 
-// GET: Fetch all investment opportunities
 export async function GET(request: NextRequest) {
   try {
     initializeDatabase();
@@ -126,7 +123,7 @@ export async function GET(request: NextRequest) {
         success: true,
         data: [],
         total: 0,
-        message: 'No investments found. Please add some.'
+        message: 'No investments found.'
       });
     }
     
@@ -165,19 +162,14 @@ export async function GET(request: NextRequest) {
       total: parsedData.length,
     });
   } catch (error) {
-    console.error('❌ Database error:', error);
+    console.error('❌ GET error:', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Failed to fetch investment opportunities',
-        details: (error as Error).message 
-      },
+      { success: false, error: 'Failed to fetch investments' },
       { status: 500 }
     );
   }
 }
 
-// POST: Create a new investment opportunity
 export async function POST(request: NextRequest) {
   try {
     initializeDatabase();
@@ -227,23 +219,24 @@ export async function POST(request: NextRequest) {
         ...newInvestment,
         features: JSON.parse(newInvestment.features || '[]')
       },
-      message: 'Investment opportunity created successfully',
+      message: 'Investment created successfully',
     });
   } catch (error) {
-    console.error('❌ Database error:', error);
+    console.error('❌ POST error:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to create investment opportunity' },
+      { success: false, error: 'Failed to create investment' },
       { status: 500 }
     );
   }
 }
 
-// PUT: Update an investment opportunity
 export async function PUT(request: NextRequest) {
   try {
     initializeDatabase();
     
     const body = await request.json();
+    console.log('📝 PUT request body:', body);
+    
     const { 
       id,
       title, 
@@ -276,13 +269,13 @@ export async function PUT(request: NextRequest) {
     const db = new Database(DB_PATH);
     
     // Check if investment exists
-    const checkStmt = db.prepare('SELECT id FROM investment_opportunities WHERE id = ?');
+    const checkStmt = db.prepare('SELECT * FROM investment_opportunities WHERE id = ?');
     const existing = checkStmt.get(parseInt(id));
     
     if (!existing) {
       db.close();
       return NextResponse.json(
-        { success: false, error: 'Investment opportunity not found' },
+        { success: false, error: `Investment with ID ${id} not found` },
         { status: 404 }
       );
     }
@@ -321,31 +314,33 @@ export async function PUT(request: NextRequest) {
     
     if (result.changes === 0) {
       return NextResponse.json(
-        { success: false, error: 'Investment opportunity not found' },
-        { status: 404 }
+        { success: false, error: 'Failed to update investment' },
+        { status: 500 }
       );
     }
     
     return NextResponse.json({
       success: true,
-      message: 'Investment opportunity updated successfully',
+      message: 'Investment updated successfully',
     });
   } catch (error) {
-    console.error('❌ Database error:', error);
+    console.error('❌ PUT error:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to update investment opportunity' },
+      { success: false, error: 'Failed to update investment' },
       { status: 500 }
     );
   }
 }
 
-// DELETE: Remove an investment opportunity
 export async function DELETE(request: NextRequest) {
   try {
     initializeDatabase();
     
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
+    
+    console.log('🗑️ DELETE request, id:', id);
+    
     if (!id) {
       return NextResponse.json(
         { success: false, error: 'Investment ID required' },
@@ -354,25 +349,38 @@ export async function DELETE(request: NextRequest) {
     }
     
     const db = new Database(DB_PATH);
+    
+    // Check if investment exists
+    const checkStmt = db.prepare('SELECT * FROM investment_opportunities WHERE id = ?');
+    const existing = checkStmt.get(parseInt(id));
+    
+    if (!existing) {
+      db.close();
+      return NextResponse.json(
+        { success: false, error: `Investment with ID ${id} not found` },
+        { status: 404 }
+      );
+    }
+    
     const stmt = db.prepare('DELETE FROM investment_opportunities WHERE id = ?');
     const result = stmt.run(parseInt(id));
     db.close();
     
     if (result.changes === 0) {
       return NextResponse.json(
-        { success: false, error: 'Investment opportunity not found' },
-        { status: 404 }
+        { success: false, error: 'Failed to delete investment' },
+        { status: 500 }
       );
     }
     
     return NextResponse.json({
       success: true,
-      message: 'Investment opportunity deleted successfully',
+      message: 'Investment deleted successfully',
     });
   } catch (error) {
-    console.error('❌ Database error:', error);
+    console.error('❌ DELETE error:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to delete investment opportunity' },
+      { success: false, error: 'Failed to delete investment' },
       { status: 500 }
     );
   }
