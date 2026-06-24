@@ -1,30 +1,44 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Database from 'better-sqlite3';
-import fs from 'fs';
-import path from 'path';
 
-const DB_PATH = path.join(process.cwd(), 'careers.db');
+// Use in-memory database for Vercel compatibility
+let db: Database.Database | null = null;
+let isInitialized = false;
 
-// GET: Fetch all roles
-export async function GET(request: NextRequest) {
+function getDb() {
+  if (!db) {
+    db = new Database(':memory:');
+    db.pragma('journal_mode = WAL');
+  }
+  return db;
+}
+
+function initializeDatabase() {
+  if (isInitialized) return;
+  
   try {
-    // Check if database exists
-    if (!fs.existsSync(DB_PATH)) {
-      // Create database with sample data
-      const db = new Database(DB_PATH);
-      db.exec(`
-        CREATE TABLE IF NOT EXISTS roles (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          title TEXT NOT NULL,
-          department TEXT NOT NULL,
-          location TEXT NOT NULL,
-          type TEXT NOT NULL,
-          icon TEXT DEFAULT 'Wrench',
-          desc TEXT NOT NULL,
-          status TEXT DEFAULT 'open',
-          posted_date TEXT DEFAULT CURRENT_DATE
-        )
-      `);
+    const db = getDb();
+    
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS roles (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        department TEXT NOT NULL,
+        location TEXT NOT NULL,
+        type TEXT NOT NULL,
+        icon TEXT DEFAULT 'Wrench',
+        desc TEXT NOT NULL,
+        status TEXT DEFAULT 'open',
+        posted_date TEXT DEFAULT CURRENT_DATE
+      )
+    `);
+    
+    // Check if table has data
+    const countStmt = db.prepare('SELECT COUNT(*) as count FROM roles');
+    const result = countStmt.get() as { count: number };
+    
+    if (result.count === 0) {
+      console.log('📊 Inserting sample career data...');
       
       const insertStmt = db.prepare(`
         INSERT INTO roles (title, department, location, type, icon, desc, status, posted_date) 
@@ -44,13 +58,44 @@ export async function GET(request: NextRequest) {
       });
       
       insertMany(sampleRoles);
-      db.close();
+      console.log('✅ Sample career data inserted into memory!');
     }
+    
+    isInitialized = true;
+  } catch (error) {
+    console.error('❌ Error initializing careers database:', error);
+  }
+}
+
+// GET: Fetch all roles
+export async function GET(request: NextRequest) {
+  try {
+    initializeDatabase();
     
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status') || 'all';
+    const id = searchParams.get('id');
     
-    const db = new Database(DB_PATH);
+    const db = getDb();
+    
+    // If specific ID is requested
+    if (id) {
+      const stmt = db.prepare('SELECT * FROM roles WHERE id = ?');
+      const result = stmt.get(parseInt(id));
+      
+      if (!result) {
+        return NextResponse.json(
+          { success: false, error: 'Job not found' },
+          { status: 404 }
+        );
+      }
+      
+      return NextResponse.json({
+        success: true,
+        data: result,
+      });
+    }
+    
     let stmt;
     if (status === 'all') {
       stmt = db.prepare('SELECT * FROM roles ORDER BY posted_date DESC');
@@ -59,7 +104,6 @@ export async function GET(request: NextRequest) {
     }
     
     const result = status === 'all' ? stmt.all() : stmt.all(status);
-    db.close();
     
     return NextResponse.json({
       success: true,
@@ -70,7 +114,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Database error:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch job openings' },
+      { success: false, error: 'Failed to fetch job openings: ' + (error as Error).message },
       { status: 500 }
     );
   }
@@ -79,6 +123,8 @@ export async function GET(request: NextRequest) {
 // POST: Create a new job
 export async function POST(request: NextRequest) {
   try {
+    initializeDatabase();
+    
     const body = await request.json();
     const { title, department, location, type, icon, desc } = body;
     
@@ -89,26 +135,7 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Ensure database exists
-    if (!fs.existsSync(DB_PATH)) {
-      const db = new Database(DB_PATH);
-      db.exec(`
-        CREATE TABLE IF NOT EXISTS roles (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          title TEXT NOT NULL,
-          department TEXT NOT NULL,
-          location TEXT NOT NULL,
-          type TEXT NOT NULL,
-          icon TEXT DEFAULT 'Wrench',
-          desc TEXT NOT NULL,
-          status TEXT DEFAULT 'open',
-          posted_date TEXT DEFAULT CURRENT_DATE
-        )
-      `);
-      db.close();
-    }
-    
-    const db = new Database(DB_PATH);
+    const db = getDb();
     const stmt = db.prepare(`
       INSERT INTO roles (title, department, location, type, icon, desc, status, posted_date)
       VALUES (?, ?, ?, ?, ?, ?, 'open', date('now'))
@@ -118,7 +145,6 @@ export async function POST(request: NextRequest) {
     
     const getStmt = db.prepare('SELECT * FROM roles WHERE id = ?');
     const newRole = getStmt.get(info.lastInsertRowid);
-    db.close();
     
     return NextResponse.json({
       success: true,
@@ -129,7 +155,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Database error:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to create job' },
+      { success: false, error: 'Failed to create job: ' + (error as Error).message },
       { status: 500 }
     );
   }
@@ -138,6 +164,8 @@ export async function POST(request: NextRequest) {
 // PUT: Update a job
 export async function PUT(request: NextRequest) {
   try {
+    initializeDatabase();
+    
     const body = await request.json();
     const { id, title, department, location, type, icon, desc, status } = body;
     
@@ -148,7 +176,18 @@ export async function PUT(request: NextRequest) {
       );
     }
     
-    const db = new Database(DB_PATH);
+    const db = getDb();
+    
+    // Check if job exists
+    const checkStmt = db.prepare('SELECT * FROM roles WHERE id = ?');
+    const existing = checkStmt.get(parseInt(id));
+    
+    if (!existing) {
+      return NextResponse.json(
+        { success: false, error: 'Job not found' },
+        { status: 404 }
+      );
+    }
     
     const updates: string[] = [];
     const values: any[] = [];
@@ -162,37 +201,38 @@ export async function PUT(request: NextRequest) {
     if (status) { updates.push('status = ?'); values.push(status); }
     
     if (updates.length === 0) {
-      db.close();
       return NextResponse.json(
         { success: false, error: 'No fields to update' },
         { status: 400 }
       );
     }
     
-    values.push(id);
-    const query = `UPDATE roles SET ${updates.join(', ')} WHERE id = ? RETURNING *`;
+    values.push(parseInt(id));
+    const query = `UPDATE roles SET ${updates.join(', ')} WHERE id = ?`;
     
     const stmt = db.prepare(query);
-    const result = stmt.get(...values);
-    db.close();
+    const result = stmt.run(...values);
     
-    if (!result) {
+    if (result.changes === 0) {
       return NextResponse.json(
-        { success: false, error: 'Job not found' },
-        { status: 404 }
+        { success: false, error: 'Failed to update job' },
+        { status: 500 }
       );
     }
     
+    const getStmt = db.prepare('SELECT * FROM roles WHERE id = ?');
+    const updatedRole = getStmt.get(parseInt(id));
+    
     return NextResponse.json({
       success: true,
-      data: result,
+      data: updatedRole,
       message: 'Job updated successfully',
     });
     
   } catch (error) {
     console.error('Database error:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to update job' },
+      { success: false, error: 'Failed to update job: ' + (error as Error).message },
       { status: 500 }
     );
   }
@@ -201,6 +241,8 @@ export async function PUT(request: NextRequest) {
 // DELETE: Remove a job
 export async function DELETE(request: NextRequest) {
   try {
+    initializeDatabase();
+    
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
     
@@ -211,15 +253,26 @@ export async function DELETE(request: NextRequest) {
       );
     }
     
-    const db = new Database(DB_PATH);
-    const stmt = db.prepare('DELETE FROM roles WHERE id = ?');
-    const result = stmt.run(parseInt(id));
-    db.close();
+    const db = getDb();
     
-    if (result.changes === 0) {
+    // Check if job exists
+    const checkStmt = db.prepare('SELECT * FROM roles WHERE id = ?');
+    const existing = checkStmt.get(parseInt(id));
+    
+    if (!existing) {
       return NextResponse.json(
         { success: false, error: 'Job not found' },
         { status: 404 }
+      );
+    }
+    
+    const stmt = db.prepare('DELETE FROM roles WHERE id = ?');
+    const result = stmt.run(parseInt(id));
+    
+    if (result.changes === 0) {
+      return NextResponse.json(
+        { success: false, error: 'Failed to delete job' },
+        { status: 500 }
       );
     }
     
@@ -231,7 +284,7 @@ export async function DELETE(request: NextRequest) {
   } catch (error) {
     console.error('Database error:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to delete job' },
+      { success: false, error: 'Failed to delete job: ' + (error as Error).message },
       { status: 500 }
     );
   }
