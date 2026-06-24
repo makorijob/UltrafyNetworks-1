@@ -1257,15 +1257,25 @@ export default function AdminDashboard() {
       }
 
       // Fetch investments
-      const investRes = await fetch('/api/invest?status=all');
-      const investData = await investRes.json();
-      if (investData.success) {
-        setInvestments(investData.data);
-        setStats(prev => ({
-          ...prev,
-          totalInvestments: investData.data.length,
-          activeInvestments: investData.data.filter((i: any) => i.status === 'active').length,
-        }));
+      try {
+        const investRes = await fetch('/api/invest?status=all');
+        const investData = await investRes.json();
+        console.log('Invest API response:', investData);
+        
+        if (investData.success && investData.data) {
+          setInvestments(investData.data);
+          setStats(prev => ({
+            ...prev,
+            totalInvestments: investData.data.length,
+            activeInvestments: investData.data.filter((i: any) => i.status === 'active').length,
+          }));
+        } else {
+          console.error('Invest API returned error:', investData.error);
+          setInvestments([]);
+        }
+      } catch (error) {
+        console.error('Failed to fetch investments:', error);
+        setInvestments([]);
       }
 
       // Fetch messages
@@ -1520,7 +1530,7 @@ export default function AdminDashboard() {
         body: JSON.stringify(data),
       });
       const result = await response.json();
-      if (response.ok) {
+      if (response.ok && result.success) {
         await fetchAllData();
         alert(result.message || 'Investment added successfully!');
         return true;
@@ -1530,7 +1540,7 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       console.error('Add investment error:', error);
-      alert('Error adding investment');
+      alert('Error adding investment: ' + (error as Error).message);
       return false;
     }
   };
@@ -1543,7 +1553,7 @@ export default function AdminDashboard() {
         body: JSON.stringify({ id: editingInvestment?.id, ...data }),
       });
       const result = await response.json();
-      if (response.ok) {
+      if (response.ok && result.success) {
         await fetchAllData();
         alert(result.message || 'Investment updated successfully!');
         return true;
@@ -1553,7 +1563,7 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       console.error('Update investment error:', error);
-      alert('Error updating investment');
+      alert('Error updating investment: ' + (error as Error).message);
       return false;
     }
   };
@@ -1563,7 +1573,7 @@ export default function AdminDashboard() {
     try {
       const response = await fetch(`/api/invest?id=${id}`, { method: 'DELETE' });
       const result = await response.json();
-      if (response.ok) {
+      if (response.ok && result.success) {
         await fetchAllData();
         alert(result.message || 'Investment deleted successfully!');
       } else {
@@ -1571,7 +1581,7 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       console.error('Delete investment error:', error);
-      alert('Error deleting investment');
+      alert('Error deleting investment: ' + (error as Error).message);
     }
   };
 
@@ -2326,7 +2336,12 @@ export default function AdminDashboard() {
                 </button>
               </div>
 
-              {filteredInvestments.length === 0 ? (
+              {loading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="w-8 h-8 text-emerald-500 animate-spin" />
+                  <span className="ml-3 text-slate-600">Loading investments...</span>
+                </div>
+              ) : filteredInvestments.length === 0 ? (
                 <div className="bg-white rounded-xl border border-slate-100 p-12 text-center">
                   <TrendingUp className="w-12 h-12 text-slate-300 mx-auto mb-3" />
                   <p className="text-slate-500">{searchTerm ? 'No investments match your search' : 'No investment opportunities'}</p>
