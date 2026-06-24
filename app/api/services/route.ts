@@ -1,31 +1,45 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Database from 'better-sqlite3';
-import fs from 'fs';
-import path from 'path';
 
-// Use the database file in your project root
-const DB_PATH = path.join(process.cwd(), 'services.db');
+// Use in-memory database for Vercel compatibility
+let db: Database.Database | null = null;
+let isInitialized = false;
 
-export async function GET() {
+function getDb() {
+  if (!db) {
+    db = new Database(':memory:');
+    db.pragma('journal_mode = WAL');
+  }
+  return db;
+}
+
+function initializeDatabase() {
+  if (isInitialized) return;
+  
   try {
-    // Check if database exists
-    if (!fs.existsSync(DB_PATH)) {
-      // Initialize with sample data
-      const db = new Database(DB_PATH);
-      db.exec(`
-        CREATE TABLE IF NOT EXISTS services (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          title TEXT NOT NULL,
-          description TEXT NOT NULL,
-          icon TEXT DEFAULT 'Wifi',
-          color TEXT DEFAULT 'bg-blue-500',
-          image TEXT DEFAULT '/images/services/placeholder.jpg',
-          category TEXT DEFAULT 'Connectivity',
-          features TEXT DEFAULT '[]',
-          status TEXT DEFAULT 'active',
-          created_at TEXT DEFAULT CURRENT_TIMESTAMP
-        )
-      `);
+    const db = getDb();
+    
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS services (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        description TEXT NOT NULL,
+        icon TEXT DEFAULT 'Wifi',
+        color TEXT DEFAULT 'bg-blue-500',
+        image TEXT DEFAULT '/images/services/placeholder.jpg',
+        category TEXT DEFAULT 'Connectivity',
+        features TEXT DEFAULT '[]',
+        status TEXT DEFAULT 'active',
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    
+    // Check if table has data
+    const countStmt = db.prepare('SELECT COUNT(*) as count FROM services');
+    const result = countStmt.get() as { count: number };
+    
+    if (result.count === 0) {
+      console.log('📊 Inserting sample service data...');
       
       const insertStmt = db.prepare(`
         INSERT INTO services (title, description, icon, color, image, category, features, status)
@@ -36,6 +50,7 @@ export async function GET() {
         ['Internet Installation', 'Professional fibre and wireless internet installation for homes and businesses.', 'Wifi', 'bg-blue-500', '/images/services/internet.jpg', 'Connectivity', JSON.stringify(['Fibre to the home', 'Wireless setup', 'Network configuration'])],
         ['CCTV Installation', 'HD surveillance systems with remote viewing access for homes and businesses.', 'Camera', 'bg-slate-700', '/images/services/cctv.jpg', 'Security', JSON.stringify(['HD cameras', 'Remote viewing', 'Night vision'])],
         ['Solar Panels', 'Solar energy solutions with battery backup options for homes and businesses.', 'Sun', 'bg-amber-500', '/images/services/solar.jpg', 'Energy', JSON.stringify(['Solar panel installation', 'Battery backup', 'System design'])],
+        ['Electric Fence', 'Perimeter security solutions with shock deterrent systems.', 'ShieldAlert', 'bg-red-500', '/images/services/electric-fence.jpg', 'Security', JSON.stringify(['Shock deterrent', 'Alarm integration', 'Perimeter monitoring'])],
       ];
       
       const insertMany = db.transaction((services: any[][]) => {
@@ -45,14 +60,22 @@ export async function GET() {
       });
       
       insertMany(sampleServices);
-      db.close();
-      console.log('Database created with sample services!');
+      console.log('✅ Sample service data inserted into memory!');
     }
     
-    const db = new Database(DB_PATH);
+    isInitialized = true;
+  } catch (error) {
+    console.error('❌ Error initializing services database:', error);
+  }
+}
+
+export async function GET() {
+  try {
+    initializeDatabase();
+    
+    const db = getDb();
     const stmt = db.prepare('SELECT * FROM services ORDER BY created_at DESC');
-    const result = stmt.all();
-    db.close();
+    const result = stmt.all() as any[];
     
     // Parse features JSON for each service
     const parsedData = result.map((r: any) => ({
@@ -79,6 +102,8 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    initializeDatabase();
+    
     const body = await request.json();
     const { title, description, category, features, image, color } = body;
     
@@ -89,27 +114,7 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Ensure database exists
-    if (!fs.existsSync(DB_PATH)) {
-      const db = new Database(DB_PATH);
-      db.exec(`
-        CREATE TABLE IF NOT EXISTS services (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          title TEXT NOT NULL,
-          description TEXT NOT NULL,
-          icon TEXT DEFAULT 'Wifi',
-          color TEXT DEFAULT 'bg-blue-500',
-          image TEXT DEFAULT '/images/services/placeholder.jpg',
-          category TEXT DEFAULT 'Connectivity',
-          features TEXT DEFAULT '[]',
-          status TEXT DEFAULT 'active',
-          created_at TEXT DEFAULT CURRENT_TIMESTAMP
-        )
-      `);
-      db.close();
-    }
-    
-    const db = new Database(DB_PATH);
+    const db = getDb();
     const stmt = db.prepare(`
       INSERT INTO services (title, description, icon, color, image, category, features, status)
       VALUES (?, ?, ?, ?, ?, ?, ?, 'active')
@@ -127,7 +132,6 @@ export async function POST(request: NextRequest) {
     
     const getStmt = db.prepare('SELECT * FROM services WHERE id = ?');
     const newService = getStmt.get(info.lastInsertRowid) as any;
-    db.close();
     
     return NextResponse.json({
       success: true,
@@ -148,6 +152,8 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
+    initializeDatabase();
+    
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
     if (!id) {
@@ -160,7 +166,19 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const { title, description, category, features, image, color, status } = body;
     
-    const db = new Database(DB_PATH);
+    const db = getDb();
+    
+    // Check if service exists
+    const checkStmt = db.prepare('SELECT * FROM services WHERE id = ?');
+    const existing = checkStmt.get(parseInt(id));
+    
+    if (!existing) {
+      return NextResponse.json(
+        { success: false, error: 'Service not found' },
+        { status: 404 }
+      );
+    }
+    
     const stmt = db.prepare(`
       UPDATE services 
       SET title = ?, description = ?, icon = ?, color = ?, image = ?, category = ?, features = ?, status = ?
@@ -168,22 +186,21 @@ export async function PUT(request: NextRequest) {
     `);
     
     const result = stmt.run(
-      title || '',
-      description || '',
+      title || existing.title,
+      description || existing.description,
       'Wifi',
-      color || 'bg-blue-500',
-      image || '/images/services/placeholder.jpg',
-      category || 'Connectivity',
-      JSON.stringify(features || []),
-      status || 'active',
+      color || existing.color || 'bg-blue-500',
+      image || existing.image || '/images/services/placeholder.jpg',
+      category || existing.category || 'Connectivity',
+      JSON.stringify(features || JSON.parse(existing.features || '[]')),
+      status || existing.status || 'active',
       parseInt(id)
     );
-    db.close();
     
     if (result.changes === 0) {
       return NextResponse.json(
-        { success: false, error: 'Service not found' },
-        { status: 404 }
+        { success: false, error: 'Failed to update service' },
+        { status: 500 }
       );
     }
     
@@ -194,7 +211,7 @@ export async function PUT(request: NextRequest) {
   } catch (error) {
     console.error('Error updating service:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to update service' },
+      { success: false, error: 'Failed to update service: ' + (error as Error).message },
       { status: 500 }
     );
   }
@@ -202,6 +219,8 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    initializeDatabase();
+    
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
     if (!id) {
@@ -211,15 +230,26 @@ export async function DELETE(request: NextRequest) {
       );
     }
     
-    const db = new Database(DB_PATH);
-    const stmt = db.prepare('DELETE FROM services WHERE id = ?');
-    const result = stmt.run(parseInt(id));
-    db.close();
+    const db = getDb();
     
-    if (result.changes === 0) {
+    // Check if service exists
+    const checkStmt = db.prepare('SELECT * FROM services WHERE id = ?');
+    const existing = checkStmt.get(parseInt(id));
+    
+    if (!existing) {
       return NextResponse.json(
         { success: false, error: 'Service not found' },
         { status: 404 }
+      );
+    }
+    
+    const stmt = db.prepare('DELETE FROM services WHERE id = ?');
+    const result = stmt.run(parseInt(id));
+    
+    if (result.changes === 0) {
+      return NextResponse.json(
+        { success: false, error: 'Failed to delete service' },
+        { status: 500 }
       );
     }
     
@@ -230,7 +260,7 @@ export async function DELETE(request: NextRequest) {
   } catch (error) {
     console.error('Error deleting service:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to delete service' },
+      { success: false, error: 'Failed to delete service: ' + (error as Error).message },
       { status: 500 }
     );
   }
