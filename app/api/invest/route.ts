@@ -3,15 +3,18 @@ import Database from 'better-sqlite3';
 import fs from 'fs';
 import path from 'path';
 
-const DB_PATH = path.join(process.cwd(), 'invest.db');
+const DB_PATH = path.join(process.cwd(), 'data', 'invest.db');
 
-function getDb() {
-  // Ensure directory exists
+// Ensure data directory exists
+function ensureDataDir() {
   const dir = path.dirname(DB_PATH);
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
-  
+}
+
+function getDb() {
+  ensureDataDir();
   const db = new Database(DB_PATH);
   db.pragma('journal_mode = WAL');
   return db;
@@ -21,32 +24,32 @@ function initializeDatabase() {
   try {
     const db = getDb();
     
-    // Check if table exists
-    const tableCheck = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='investment_opportunities'");
-    const tableExists = tableCheck.get();
+    // Create table if not exists
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS investment_opportunities (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        description TEXT NOT NULL,
+        category TEXT DEFAULT 'Infrastructure',
+        icon TEXT DEFAULT 'TrendingUp',
+        min_investment TEXT DEFAULT '50,000',
+        expected_return TEXT DEFAULT '15%',
+        duration TEXT DEFAULT '12 months',
+        image TEXT DEFAULT '/images/invest/default.jpg',
+        features TEXT DEFAULT '[]',
+        status TEXT DEFAULT 'active',
+        featured INTEGER DEFAULT 0,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
     
-    if (!tableExists) {
-      console.log('📊 Creating investment_opportunities table...');
+    // Check if table has data
+    const countStmt = db.prepare('SELECT COUNT(*) as count FROM investment_opportunities');
+    const result = countStmt.get() as { count: number };
+    
+    if (result.count === 0) {
+      console.log('📊 Inserting sample investment data...');
       
-      db.exec(`
-        CREATE TABLE investment_opportunities (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          title TEXT NOT NULL,
-          description TEXT NOT NULL,
-          category TEXT DEFAULT 'Infrastructure',
-          icon TEXT DEFAULT 'TrendingUp',
-          min_investment TEXT DEFAULT '50,000',
-          expected_return TEXT DEFAULT '15%',
-          duration TEXT DEFAULT '12 months',
-          image TEXT DEFAULT '/images/invest/default.jpg',
-          features TEXT DEFAULT '[]',
-          status TEXT DEFAULT 'active',
-          featured INTEGER DEFAULT 0,
-          created_at TEXT DEFAULT CURRENT_TIMESTAMP
-        )
-      `);
-      
-      // Insert sample data
       const insertStmt = db.prepare(`
         INSERT INTO investment_opportunities (
           title, description, category, icon, min_investment, 
@@ -116,9 +119,7 @@ function initializeDatabase() {
       });
       
       insertMany(sampleInvestments);
-      console.log('✅ Invest database initialized with sample data!');
-    } else {
-      console.log('✅ Investment table already exists');
+      console.log('✅ Sample investment data inserted!');
     }
     
     db.close();
@@ -131,7 +132,6 @@ function initializeDatabase() {
 
 export async function GET(request: NextRequest) {
   try {
-    // Initialize database first
     initializeDatabase();
     
     const { searchParams } = new URL(request.url);
@@ -139,16 +139,6 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category');
     const status = searchParams.get('status') || 'active';
     const id = searchParams.get('id');
-    
-    // Check if DB file exists
-    if (!fs.existsSync(DB_PATH)) {
-      return NextResponse.json({
-        success: true,
-        data: [],
-        total: 0,
-        message: 'No investments found.'
-      });
-    }
     
     const db = getDb();
     
@@ -177,7 +167,7 @@ export async function GET(request: NextRequest) {
     let query = 'SELECT * FROM investment_opportunities WHERE 1=1';
     const params: any[] = [];
     
-    if (status !== 'all') {
+    if (status && status !== 'all') {
       query += ' AND status = ?';
       params.push(status);
     }
