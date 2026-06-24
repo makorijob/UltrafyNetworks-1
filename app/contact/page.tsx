@@ -109,8 +109,8 @@ export default function ContactPage() {
               </div>
               <p className="font-bold text-blue-950 text-base sm:text-lg mb-1">Call us</p>
               <p className="text-slate-500 text-xs sm:text-sm mb-3 sm:mb-4">Speak directly with our support team</p>
-              <a href="tel:0700541561" className="text-emerald-600 font-semibold hover:text-emerald-800 transition-colors text-sm sm:text-base">
-                0700 541 561
+              <a href="tel:0740121382" className="text-emerald-600 font-semibold hover:text-emerald-800 transition-colors text-sm sm:text-base">
+                0740121382
               </a>
             </div>
 
@@ -120,7 +120,7 @@ export default function ContactPage() {
               </div>
               <p className="font-bold text-blue-950 text-base sm:text-lg mb-1">WhatsApp</p>
               <p className="text-slate-500 text-xs sm:text-sm mb-3 sm:mb-4">Fastest way to reach us for quick queries</p>
-              <a href="https://wa.me/254703199691" className="text-emerald-600 font-semibold hover:text-emerald-800 transition-colors text-sm sm:text-base">
+              <a href="https://wa.me/254740121382" className="text-emerald-600 font-semibold hover:text-emerald-800 transition-colors text-sm sm:text-base">
                 Chat with us →
               </a>
             </div>
@@ -131,8 +131,8 @@ export default function ContactPage() {
               </div>
               <p className="font-bold text-blue-950 text-base sm:text-lg mb-1">Email us</p>
               <p className="text-slate-500 text-xs sm:text-sm mb-3 sm:mb-4">For detailed inquiries and documentation</p>
-              <a href="mailto:info@ultrafynetworks.co.ke" className="text-emerald-600 font-semibold hover:text-emerald-800 transition-colors break-all text-sm sm:text-base">
-                info@ultrafynetworks.co.ke
+              <a href="mailto:info.ultrafynetworks@gmail.com" className="text-emerald-600 font-semibold hover:text-emerald-800 transition-colors break-all text-sm sm:text-base">
+                info.ultrafynetworks@gmail.com
               </a>
             </div>
 
