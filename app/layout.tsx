@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   title: "Ultrafy Networks",
   description: "High-speed fiber internet and ICT solutions in Kenya.",
   verification: {
-    google: "QnUzZvGE9aKsz4tqaEgpMQL-YxmEu6RIi1GucRyYje4",
+    google: QnUzZvGE9aKsz4tqaEgpMQL-YxmEu6RIi1GucRyYje4",
   },
 };
 export default function RootLayout({
